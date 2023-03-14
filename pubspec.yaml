@@ -13,17 +13,18 @@ dependencies:
   camera: 0.10.3+2 # https://pub.dev/packages/camera
   cloud_firestore: 4.4.4 # https://pub.dev/packages/cloud_firestore
   collection: 1.17.0 # https://pub.dev/packages/collection
+  flutter_riverpod: 2.3.2 # https://pub.dev/packages/flutter_riverpod
   flutter_svg: 2.0.3 # https://pub.dev/packages/flutter_svg
-  geocoding: 2.0.5 # https://pub.dev/packages/geocoding
+  geocoding: 2.1.0 # https://pub.dev/packages/geocoding
   geolocator: 9.0.2 # https://pub.dev/packages/geolocator
   google_maps_flutter: 2.2.5 # https://pub.dev/packages/google_maps_flutter
   http: 0.13.5 # https://pub.dev/packages/http
-  intl: 0.17.0 # https://pub.dev/packages/intl
+  intl: 0.18.0 # https://pub.dev/packages/intl
   json_annotation: 4.8.0 # https://pub.dev/packages/json_annotation
   path: 1.8.2 # https://pub.dev/packages/path
   path_provider: 2.0.13 # https://pub.dev/packages/path_provider
   quiver: 3.2.1 # https://pub.dev/packages/quiver
-  sqflite: 2.2.5 # https://pub.dev/packages/sqflite
+  sqflite: 2.2.6 # https://pub.dev/packages/sqflite
   stack_trace: 1.11.0 # https://pub.dev/packages/stack_trace
   webview_flutter: 4.0.6 # https://pub.dev/packages/webview_flutter
 

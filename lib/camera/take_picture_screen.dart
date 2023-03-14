@@ -2,197 +2,172 @@ import 'dart:io';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_base/base/camera/camera_meta_provider.dart';
+import 'package:flutter_base/base/debug_util.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart' show join;
 import 'package:path_provider/path_provider.dart';
 
-import '../debug_util.dart';
-import 'camera_meta.dart';
+import '../state_status.dart';
 
-class TakePictureScreen extends StatefulWidget {
+class TakePictureScreen extends ConsumerWidget {
   static const routeName = "take-picture-screen";
 
   const TakePictureScreen({super.key});
 
   @override
-  _TakePictureScreenState createState() => _TakePictureScreenState();
-}
-
-class _TakePictureScreenState extends State<TakePictureScreen> {
-  late Future<CameraMeta> _cameraMetaFuture;
-  late CameraMeta _cameraMeta;
-
-  @override
-  void initState() {
-    super.initState();
-    _cameraMetaFuture = initCamera();
-  }
-
-  @override
-  void dispose() {
-    _cameraMeta.selectedCameraController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return FutureBuilder<CameraMeta>(
-      future: _cameraMetaFuture,
-      builder: (BuildContext context, AsyncSnapshot<CameraMeta> snapshot) {
-        if (snapshot.hasData) {
-          _cameraMeta = snapshot.data!;
-          return Provider(
-            create: (BuildContext context) {
-              return CameraMetaProvider(snapshot.data!);
-            },
-            child: const TakePictureLayoutWidget(),
-          );
-        } else {
-          return const Center(child: CircularProgressIndicator());
-        }
-      },
-    );
+  Widget build(BuildContext context, WidgetRef ref) {
+    debugUtil.mark(hashCode.toString());
+    final cameraMeta = ref.watch(cameraMetaProvider);
+    if (cameraMeta.stateStatus == StateStatus.updated) {
+      return const TakePictureLayoutWidget();
+    } else {
+      return const Center(child: CircularProgressIndicator());
+    }
   }
 }
 
-class TakePictureLayoutWidget extends StatelessWidget {
+class TakePictureLayoutWidget extends ConsumerWidget {
   const TakePictureLayoutWidget({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     debugUtil.mark(hashCode.toString());
-    return Consumer<CameraMetaProvider>(
-      builder: (BuildContext context, object) {
-        if (object.cameraMeta.imagePath != null) {
-          return const ConfirmPictureWidget();
-        } else {
-          return const CameraPreviewWidget();
-        }
-      },
-    );
+    final cameraMeta = ref.watch(cameraMetaProvider);
+    if (cameraMeta.imagePath != null) {
+      return const ConfirmPictureWidget();
+    } else {
+      return const CameraPreviewWidget();
+    }
   }
 }
 
-class CameraPreviewWidget extends StatelessWidget {
+class CameraPreviewWidget extends ConsumerWidget {
   const CameraPreviewWidget({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     debugUtil.mark(hashCode.toString());
-    return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(
-        title: const Text("Take a profile picture"),
-      ),
-      body: Consumer<CameraMetaProvider>(
-        builder: (BuildContext context, object) {
-          return Column(
-            children: [
-              const SizedBox(
-                height: 16,
-              ),
-              Expanded(
-                child: Center(
-                  child: AspectRatio(
-                    aspectRatio: object.cameraMeta.selectedCameraController.value.aspectRatio,
-                    child: CameraPreview(object.cameraMeta.selectedCameraController),
-                  ),
+    final cameraMeta = ref.watch(cameraMetaProvider);
+    final cameraController = cameraMeta.selectedCameraController;
+    if (cameraController != null) {
+      return Scaffold(
+        backgroundColor: Colors.black,
+        appBar: AppBar(
+          title: const Text("Take a profile picture"),
+        ),
+        body: Column(
+          children: [
+            const SizedBox(
+              height: 16,
+            ),
+            Expanded(
+              child: Center(
+                child: AspectRatio(
+                  aspectRatio: cameraController.value.aspectRatio,
+                  child: CameraPreview(cameraController),
                 ),
               ),
-              IconButton(
-                icon: const Icon(Icons.camera),
-                iconSize: 48,
-                color: Colors.white,
-                tooltip: 'Take picture',
-                onPressed: () {
-                  _onShutterButtonClicked(context, object);
-                },
-              ),
-            ],
-          );
-        },
-      ),
-    );
+            ),
+            IconButton(
+              icon: const Icon(Icons.camera),
+              iconSize: 48,
+              color: Colors.white,
+              tooltip: 'Take picture',
+              onPressed: () {
+                _onShutterButtonClicked(context, ref);
+              },
+            ),
+          ],
+        ),
+      );
+    } else {
+      return const SizedBox();
+    }
   }
 
-  Future<void> _onShutterButtonClicked(BuildContext context, CameraMetaProvider cameraMetaProvider) async {
+  Future<void> _onShutterButtonClicked(BuildContext context, WidgetRef ref) async {
     try {
-      // final path = join(
-      //   (await getTemporaryDirectory()).path,
-      //   '${DateTime.now()}.png',
-      // );
-      XFile photoFile = await cameraMetaProvider.cameraMeta.selectedCameraController.takePicture();
-      cameraMetaProvider.setImagePath(photoFile.path);
+      final cameraMeta = ref.read(cameraMetaProvider);
+      final cameraController = cameraMeta.selectedCameraController;
+      if (cameraController != null) {
+        XFile photoFile = await cameraController.takePicture();
+        ref.read(cameraMetaProvider.notifier).setImagePath(photoFile.path);
+      }
     } catch (e) {
       debugUtil.log(e.toString());
     }
   }
 }
 
-class ConfirmPictureWidget extends StatelessWidget {
+class ConfirmPictureWidget extends ConsumerWidget {
   const ConfirmPictureWidget({super.key});
 
   static const profileImageName = "profile_image";
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     debugUtil.mark(hashCode.toString());
-    return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(
-        title: const Text("Use this picture?"),
-      ),
-      body: Consumer<CameraMetaProvider>(
-        builder: (BuildContext context, object) {
-          return Column(
-            children: [
-              const SizedBox(
-                height: 16,
+    final cameraMeta = ref.watch(cameraMetaProvider);
+    final cameraController = cameraMeta.selectedCameraController;
+    if (cameraController != null) {
+      return Scaffold(
+        backgroundColor: Colors.black,
+        appBar: AppBar(
+          title: const Text("Use this picture?"),
+        ),
+        body: Column(
+          children: [
+            const SizedBox(
+              height: 16,
+            ),
+            Expanded(
+              child: Center(
+                child: Image.file(File(cameraMeta.imagePath!)),
               ),
-              Expanded(
-                child: Center(
-                  child: Image.file(File(object.cameraMeta.imagePath!)),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.close),
+                  iconSize: 48,
+                  color: Colors.white,
+                  tooltip: 'Don\'t use this picture',
+                  onPressed: () {
+                    _onCancelButtonClicked(context, ref);
+                  },
                 ),
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.close),
-                    iconSize: 48,
-                    color: Colors.white,
-                    tooltip: 'Don\'t use this picture',
-                    onPressed: () {
-                      _onCancelButtonClicked(context, object);
-                    },
-                  ),
-                  const SizedBox(
-                    width: 144,
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.check),
-                    iconSize: 48,
-                    color: Colors.white,
-                    tooltip: 'Use this picture',
-                    onPressed: () {
-                      _onConfirmButtonClicked(context, object);
-                    },
-                  ),
-                ],
-              ),
-            ],
-          );
-        },
-      ),
-    );
+                const SizedBox(
+                  width: 144,
+                ),
+                IconButton(
+                  icon: const Icon(Icons.check),
+                  iconSize: 48,
+                  color: Colors.white,
+                  tooltip: 'Use this picture',
+                  onPressed: () {
+                    _onConfirmButtonClicked(context, ref);
+                  },
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+    } else {
+      return const SizedBox();
+    }
   }
 
-  void _onConfirmButtonClicked(BuildContext context, CameraMetaProvider cameraMetaProvider) async {
+  void _onConfirmButtonClicked(BuildContext context, WidgetRef ref) async {
     try {
       final newPath = join(
         (await getApplicationDocumentsDirectory()).path,
         '$profileImageName.png',
       );
-      await File(cameraMetaProvider.cameraMeta.imagePath!).copy(newPath);
+      final cameraMeta = ref.read(cameraMetaProvider);
+      await File(cameraMeta.imagePath!).copy(newPath);
       // TODO Upload profile image to server
       Navigator.pop(context);
     } catch (e) {
@@ -200,9 +175,9 @@ class ConfirmPictureWidget extends StatelessWidget {
     }
   }
 
-  void _onCancelButtonClicked(BuildContext context, CameraMetaProvider cameraMetaProvider) async {
+  void _onCancelButtonClicked(BuildContext context, WidgetRef ref) async {
     try {
-      cameraMetaProvider.clearImagePath();
+      ref.read(cameraMetaProvider.notifier).clearImagePath();
     } catch (e) {
       debugUtil.log(e.toString());
     }

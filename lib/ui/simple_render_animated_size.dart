@@ -138,7 +138,6 @@ class RenderAnimatedSize extends RenderAligningShiftedBox {
   TickerProvider _vsync;
 
   set vsync(TickerProvider value) {
-    assert(value != null);
     if (value == _vsync) return;
     _vsync = value;
     _controller.resync(vsync);
@@ -169,7 +168,6 @@ class RenderAnimatedSize extends RenderAligningShiftedBox {
 
     child!.layout(constraints, parentUsesSize: true);
 
-    assert(_state != null);
     switch (_state) {
       case RenderAnimatedSizeState.start:
         _layoutStart();
