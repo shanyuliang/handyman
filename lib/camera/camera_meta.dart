@@ -1,6 +1,7 @@
 import 'package:camera/camera.dart';
-import 'package:flutter_base/base/state_status.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
+
+import '../state_status.dart';
 
 part 'camera_meta.freezed.dart';
 

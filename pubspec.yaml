@@ -15,6 +15,7 @@ dependencies:
   collection: ^1.17.0 # https://pub.dev/packages/collection
   flutter_riverpod: ^2.3.2 # https://pub.dev/packages/flutter_riverpod
   flutter_svg: ^2.0.4 # https://pub.dev/packages/flutter_svg
+  freezed_annotation: ^2.2.0 # https://pub.dev/packages/freezed_annotation
   geocoding: ^2.1.0 # https://pub.dev/packages/geocoding
   geolocator: ^9.0.2 # https://pub.dev/packages/geolocator
   google_maps_flutter: ^2.2.5 # https://pub.dev/packages/google_maps_flutter
@@ -32,6 +33,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^2.0.1
+  freezed: ^2.3.2 # https://pub.dev/packages/freezed
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
