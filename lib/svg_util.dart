@@ -102,6 +102,7 @@ class BitmapDescriptorFromSvgBuilder {
 
   Future<BitmapDescriptor> build() async {
     String svgString;
+    final mediaQueryData = MediaQuery.of(_context);
     if (_assetName != null) {
       svgString = await DefaultAssetBundle.of(_context).loadString(_assetName!);
     } else if (_svgString != null) {
@@ -112,27 +113,32 @@ class BitmapDescriptorFromSvgBuilder {
     if (_interpolateParams != null) {
       svgString = svgString.interpolate(_interpolateParams!);
     }
-    DrawableRoot drawableRoot = await svg.fromSvgString(svgString, "");
-    double width = drawableRoot.viewport.width;
-    double height = drawableRoot.viewport.height;
+    //DrawableRoot drawableRoot = await svg.fromSvgString(svgString, "");
+
+    final pictureInfo = await vg.loadPicture(SvgStringLoader(svgString), null);
+
+    // double width = drawableRoot.viewport.width;
+    // double height = drawableRoot.viewport.height;
+
+    double width = pictureInfo.size.width;
+    double height = pictureInfo.size.height;
+
     if (_originalSizeAsLp) {
-      double ratio = MediaQuery.of(_context).devicePixelRatio;
+      double ratio = mediaQueryData.devicePixelRatio;
       width = width * ratio;
       height = height * ratio;
     }
     if (_originalSizeAsSp) {
-      MediaQueryData mediaQueryData = MediaQuery.of(_context);
       double ratio = mediaQueryData.devicePixelRatio * mediaQueryData.textScaleFactor;
       width = width * ratio;
       height = height * ratio;
     } else if (_targetLpWidth > 0) {
-      double pxWidth = _targetLpWidth * MediaQuery.of(_context).devicePixelRatio;
+      double pxWidth = _targetLpWidth * mediaQueryData.devicePixelRatio;
       if (pxWidth.round() != width.round()) {
         height = height * pxWidth / width;
         width = pxWidth.toDouble();
       }
     } else if (_targetSpWidth > 0) {
-      MediaQueryData mediaQueryData = MediaQuery.of(_context);
       double pxWidth = _targetSpWidth * mediaQueryData.devicePixelRatio * mediaQueryData.textScaleFactor;
       if (pxWidth.round() != width.round()) {
         height = height * pxWidth / width;
@@ -150,8 +156,8 @@ class BitmapDescriptorFromSvgBuilder {
       bitmapDescriptor = bitmapDescriptorCache.get(svgString, width.round(), height.round());
       if (bitmapDescriptor == null) {
         hit = false;
-        ui.Picture picture = drawableRoot.toPicture(size: Size(width, height));
-        ui.Image image = await picture.toImage(width.round(), height.round());
+        //ui.Picture picture = drawableRoot.toPicture(size: Size(width, height));
+        ui.Image image = await pictureInfo.picture.toImage(width.round(), height.round());
         ByteData? bytes = await image.toByteData(format: ui.ImageByteFormat.png);
         bitmapDescriptor = BitmapDescriptor.fromBytes(bytes!.buffer.asUint8List());
         bitmapDescriptorCache.set(svgString, width.round(), height.round(), bitmapDescriptor);
@@ -159,22 +165,25 @@ class BitmapDescriptorFromSvgBuilder {
         hit = true;
       }
     } else {
-      ui.Picture picture = drawableRoot.toPicture(size: Size(width, height));
-      ui.Image image = await picture.toImage(width.round(), height.round());
+      // ui.Picture picture = drawableRoot.toPicture(size: Size(width, height));
+      ui.Image image = await pictureInfo.picture.toImage(width.round(), height.round());
       ByteData? bytes = await image.toByteData(format: ui.ImageByteFormat.png);
       bitmapDescriptor = BitmapDescriptor.fromBytes(bytes!.buffer.asUint8List());
     }
-    debugUtil.log("BitmapDescriptorFromSvgAssetBuilder");
-    debugUtil.log("devicePixelRatio ${MediaQuery.of(_context).devicePixelRatio}");
-    debugUtil.log("assetName $_assetName");
-    debugUtil.log("svgString $svgString");
-    debugUtil.log("interpolateParams $_interpolateParams");
-    debugUtil.log("originalSizeAsLp $_originalSizeAsLp");
-    debugUtil.log("targetLpWidth $_targetLpWidth");
-    debugUtil.log("targetPxWidth $_targetPxWidth");
-    debugUtil.log("output width ${width.round()}");
-    debugUtil.log("output height ${height.round()}");
-    debugUtil.log("_useCache $_useCache hit $hit");
+    if (_debugLog) {
+      debugUtil.log("BitmapDescriptorFromSvgAssetBuilder");
+      debugUtil.log("devicePixelRatio ${mediaQueryData.devicePixelRatio}");
+      debugUtil.log("assetName $_assetName");
+      debugUtil.log("svgString $svgString");
+      debugUtil.log("interpolateParams $_interpolateParams");
+      debugUtil.log("originalSizeAsLp $_originalSizeAsLp");
+      debugUtil.log("targetLpWidth $_targetLpWidth");
+      debugUtil.log("targetPxWidth $_targetPxWidth");
+      debugUtil.log("output width ${width.round()}");
+      debugUtil.log("output height ${height.round()}");
+      debugUtil.log("_useCache $_useCache hit $hit");
+    }
+    pictureInfo.picture.dispose();
     return bitmapDescriptor;
   }
 }

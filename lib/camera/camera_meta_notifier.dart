@@ -1,9 +1,9 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_base/base/debug_util.dart';
-import 'package:flutter_base/base/state_status.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../debug_util.dart';
+import '../state_status.dart';
 import 'camera_meta.dart';
 
 class CameraMetaNotifier extends StateNotifier<CameraMeta> {
