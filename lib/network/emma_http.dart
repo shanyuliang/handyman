@@ -1,13 +1,13 @@
 import 'dart:convert';
 import 'dart:io';
 
-class EmmaHttp{
+class EmmaHttp {
   final HttpClient _client = HttpClient();
 
   Future<String> makeGetRequest() async {
     final request = await _client.getUrl(Uri.parse('https://www.google.com'))
       ..headers.contentType = ContentType.json
-    ..headers.add(HttpHeaders.acceptHeader, 'application/json,*/*');
+      ..headers.add(HttpHeaders.acceptHeader, 'application/json,*/*');
 
     final response = await request.close();
 
@@ -18,9 +18,7 @@ class EmmaHttp{
     }
 
     var raw = '';
-    await response
-        .transform(const Utf8Decoder())
-        .forEach((element) => raw += element);
+    await response.transform(utf8.decoder).join();
     return raw;
   }
 }

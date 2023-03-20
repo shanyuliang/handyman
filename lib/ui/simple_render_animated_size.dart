@@ -121,7 +121,6 @@ class RenderAnimatedSize extends RenderAligningShiftedBox {
   Curve get curve => _animation.curve;
 
   set curve(Curve value) {
-    assert(value != null);
     if (value == _animation.curve) return;
     _animation.curve = value;
   }
