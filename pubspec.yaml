@@ -23,7 +23,7 @@ dependencies:
   intl: ^0.18.0 # https://pub.dev/packages/intl
   json_annotation: ^4.8.0 # https://pub.dev/packages/json_annotation
   path: ^1.8.2 # https://pub.dev/packages/path
-  path_provider: ^2.0.13 # https://pub.dev/packages/path_provider
+  path_provider: ^2.0.14 # https://pub.dev/packages/path_provider
   quiver: ^3.2.1 # https://pub.dev/packages/quiver
   sqflite: ^2.2.6 # https://pub.dev/packages/sqflite
   stack_trace: ^1.11.0 # https://pub.dev/packages/stack_trace

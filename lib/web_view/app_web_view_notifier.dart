@@ -34,20 +34,10 @@ class AppWebViewNotifier extends StateNotifier<AppWebViewState> {
           onPageStarted: (String url) async {
             debugUtil.log('Page started loading: $url');
             setPageStarted(url);
-            afterPageStartedOrFinished(
-              currentUrl: await webViewController.currentUrl(),
-              canGoBack: await webViewController.canGoBack(),
-              canGoForward: await webViewController.canGoForward(),
-            );
           },
           onPageFinished: (String url) async {
             debugUtil.log('Page finished loading: $url');
             setPageFinished(url);
-            afterPageStartedOrFinished(
-              currentUrl: await webViewController.currentUrl(),
-              canGoBack: await webViewController.canGoBack(),
-              canGoForward: await webViewController.canGoForward(),
-            );
           },
           onWebResourceError: (WebResourceError error) {},
           onNavigationRequest: (NavigationRequest request) {
@@ -88,17 +78,25 @@ class AppWebViewNotifier extends StateNotifier<AppWebViewState> {
 
   void setProgress(int progress) {
     state = state.copyWith(progress: progress);
+    if (progress == 100) {
+      _refresh();
+    }
   }
 
   void setPageStarted(String url) {
     state = state.copyWith(pageStarted: url);
+    _refresh();
   }
 
   void setPageFinished(String url) {
     state = state.copyWith(pageFinished: url);
+    _refresh();
   }
 
-  void afterPageStartedOrFinished({required String? currentUrl, required bool canGoBack, required bool canGoForward}) {
+  Future<void> _refresh() async {
+    final currentUrl = await webViewController.currentUrl();
+    final canGoBack = await webViewController.canGoBack();
+    final canGoForward = await webViewController.canGoForward();
     state = state.copyWith(currentUrl: currentUrl, canGoBack: canGoBack, canGoForward: canGoForward);
   }
 }
