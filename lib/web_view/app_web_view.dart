@@ -13,12 +13,6 @@ class AppWebView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    //'http://localhost:58965'
-    // if (!kIsWeb) {
-    //   if (Platform.isAndroid) {
-    //     WebView.platform = AndroidWebView();
-    //   }
-    // }
     return Scaffold(
       appBar: AppBar(
         leading: const BackButton(),
@@ -53,11 +47,11 @@ class _NavigationControls extends ConsumerWidget {
         Row(
           children: <Widget>[
             IconButton(
-              icon: const Icon(Icons.chevron_left_rounded),
+              icon: const Icon(Icons.arrow_back_rounded),
               onPressed: appWebViewState.canGoBack ? () async => await ref.watch(provider.notifier).goBack() : null,
             ),
             IconButton(
-              icon: const Icon(Icons.chevron_right_rounded),
+              icon: const Icon(Icons.arrow_forward_rounded),
               onPressed: appWebViewState.canGoForward ? () async => await ref.watch(provider.notifier).goForward() : null,
             ),
             IconButton(
@@ -66,7 +60,13 @@ class _NavigationControls extends ConsumerWidget {
             ),
           ],
         ),
-        Text(appWebViewState.currentUrl ?? ""),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          child: Text(
+            appWebViewState.currentUrl ?? "",
+            style: Theme.of(context).textTheme.labelSmall,
+          ),
+        ),
       ],
     );
   }
